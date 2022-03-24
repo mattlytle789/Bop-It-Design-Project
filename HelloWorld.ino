@@ -22,4 +22,3 @@ void loop() {
    delay(1000);
 }
 
-//Stanley Galloway was here 
