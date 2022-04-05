@@ -22,6 +22,11 @@ int APWM2 = 10;
 enum State_Type {resetState, startState, actionSelection, actionProcessing, completion}; // 
 State_Type FSMState = resetState; // Current state of the FSM :: initialized to the reset state
 
+// Enumeration for possible actions 
+enum Action_Type {push, cover, toss};
+Action_Type currAction; // Current action that needs to be performed
+Action_Type possibleAction[3] = {push, cover, toss}; // Possible actions that can be chosen :: Used to determine the next action 
+
 void setup() {
   // Input Pins
   pinMode(LightSensor, INPUT);
@@ -50,11 +55,11 @@ void loop() {
     break;
     // Start State
     case startState :
-
+      // Add TTS to countdown from 3 for the start of the game 
     break;
     // Action Selection State
     case actionSelection :
-
+      
     break;
     // Action Processing State
     case actionProcessing :
