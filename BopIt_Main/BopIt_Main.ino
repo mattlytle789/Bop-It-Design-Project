@@ -32,7 +32,7 @@ Action_Type nextAction; // next action that is to be performed by the player
 void setup() {
   // Input Pins
   pinMode(LightSensor, INPUT);
-  pinMode(StartButton, INPUT);
+  pinMode(StartButton, INPUT_PULLUP); // setting to a pull up input :: ON when LOW, OFF when HIGH
   pinMode(ResetButton, INPUT);
   // Output Pins
   pinMode(GreenLED, OUTPUT);
@@ -54,7 +54,7 @@ void loop() {
     // Reset State
     case resetState :
       // Transition to Start State if startButton is pressed
-      if (digitalRead(StartButton) == HIGH) {
+      if (digitalRead(StartButton) == LOW) {
         FSMState = startState;
       }
       // Stay in Reset State if startButton is not pressed
@@ -67,7 +67,19 @@ void loop() {
       // FOR DEBUGGING
       Serial.println(FSMState);
       
-      // Add TTS to countdown from 3 for the start of the game 
+      // Add TTS to countdown from 3 for the start of the game
+      // Looping for three seconds to give player a countdown
+      for (int i = 3; i > 0; i--) {
+        // FOR DEBUGGING
+        Serial.println(i);
+
+        // TTS Code
+        
+        // waiting for 1 second 
+        delay(1000); 
+      }
+      // Transitioning to Action Selection State
+      FSMState = actionSelection; 
     break;
     // Action Selection State
     case actionSelection :
@@ -89,9 +101,9 @@ void loop() {
       Serial.println(FSMState);
       
       // announce new action 
-
+  
       // wait for input from sensors
-
+      
       // determine correctness of input
 
       // If wrong :: transition to completion state and display Red LED
