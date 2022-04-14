@@ -4,7 +4,7 @@
 
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified();
 //int SDA = A0;
-//int SCL = A1;
+//int SEL = A1;
 
 void setup() {
   // put your setup code here, to run once:

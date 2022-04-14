@@ -141,8 +141,9 @@ void loop() {
           actionCompletedFlag  = true;
           actionCompleted = push;
         }
-        else if (true) { // If the toss action was completed
-          
+        else if (analogRead(LightSensor) <= 475) { // If the toss action was completed
+          actionCompletedFlag = true;
+          actionCompleted = cover;
         }
         else if (true) { // if the cover action was completed
           
