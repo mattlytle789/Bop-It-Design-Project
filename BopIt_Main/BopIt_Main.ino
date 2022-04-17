@@ -105,12 +105,13 @@ void loop() {
       for (int i = 3; i > 0; i--) {
         // FOR DEBUGGING
         Serial.println(i);
-
-        // TTS Code
-        
+        // Speaker output for countdown
+        tone(Speaker, (3-i)*1000, 50);
         // waiting for 1 second 
         delay(1000); 
       }
+      // Start tone being outputted
+      tone(Speaker, 1000, 100); 
       // Transitioning to Action Selection State
       FSMState = actionSelection; 
     break;
@@ -134,18 +135,26 @@ void loop() {
       Serial.println(FSMState);
       
       // announce new action 
-      
+      if (currAction == push) { 
+        tone(Speaker, 3000, 100);
+      }
+      else if (currAction == cover) {
+        tone(Speaker, 2000, 100);
+      }
+      else if (currAction == toss) {
+        tone(Speaker, 1000, 100);
+      }
       // wait for input from sensors
       while (!actionCompletedFlag) {
         if (digitalRead(PushButton) == LOW) { // If the push action was completed
           actionCompletedFlag  = true;
           actionCompleted = push;
         }
-        else if (analogRead(LightSensor) <= 475) { // If the toss action was completed
+        else if (analogRead(LightSensor) <= 475) { // If the cover action was completed
           actionCompletedFlag = true;
           actionCompleted = cover;
         }
-        else if (true) { // if the cover action was completed
+        else if (true) { // if the toss action was completed
           
         }
       }
@@ -161,7 +170,7 @@ void loop() {
         FSMState = actionSelection;
         digitalWrite(GreenLED, HIGH);
         delay(500);
-        digitalWrite(RedLED, LOW);
+        digitalWrite(GreenLED, LOW);
         score++;
       }
       // If wrong, time limit reached, or score = 99 :: transition to completion state and display Red LED
@@ -186,7 +195,16 @@ void loop() {
     case completion :
       // FOR DEBUGGING
       Serial.println(FSMState);
-    
+
+      // displaying the score to seven seg display
+      scoreOnes = score%10;
+      scoreTens = score/10;
+      for (int i = 0; i < 4; i++) {
+        digitalWrite(tensInputs[i], BCD[scoreTens][i]);
+        digitalWrite(onesInputs[i], BCD[scoreOnes][i]);
+      }
+      // transitioning to the reset state 
+      FSMState = resetState;
     break; 
   }
   //*********************************************************************************  
