@@ -46,10 +46,15 @@ int tensInputs[4] = {bcdTensD, bcdTensC, bcdTensB, bcdTensA}; // holds the possi
 int onesInputs[4] = {bcdOnesD, bcdOnesC, bcdOnesB, bcdOnesA}; // holds the possible input pins for the Ones BCD
 byte BCD[10][4] = {{0,0,0,0},{0,0,0,1},{0,0,1,0},{0,0,1,1},{0,1,0,0},{0,1,0,1},{0,1,1,0},{0,1,1,1},{1,0,0,0},{1,0,0,1}}; // Used to convert the score into a BCD value
 
+// FOR DEBUGGING 
+String debug = "";
+
 void setup() {
+  // FOR DEBUGGING
+  Serial.begin(9600);
   // Input Pins
   pinMode(LightSensor, INPUT);
-  pinMode(StartButton, INPUT_PULLUP); // setting to a pull up input :: ON when LOW, OFF when HIGH
+  pinMode(StartButton, INPUT); // setting to a pull up input :: ON when LOW, OFF when HIGH
   //pinMode(ResetButton, INPUT);
   pinMode(PushButton, INPUT_PULLUP); // setting to a pull up input :: ON when LOW, OFF when HIGH
   // Output Pins
@@ -64,21 +69,21 @@ void setup() {
   pinMode(bcdOnesC, OUTPUT);
   pinMode(bcdOnesD, OUTPUT);
   // setup for random number generation
-  randomSeed(analogRead(11));
-  // FOR DEBUGGING
-  Serial.begin(9600);
+  randomSeed(analogRead(A5));
+  // Initializing FSM to reset state
+  FSMState = resetState;
 }
 
 void loop() {
   //********************** FSM Implementation ***************************************
-  
+  delay(2000);
   // switch case to determine the actions of each state
   switch (FSMState) {
-    // FOR DEBUGGING
-    Serial.println(FSMState);
-    
     // Reset State
     case resetState :
+      // FOR DEBUGGING
+      Serial.println(FSMState);
+    
       // Setting outputs to low values
       digitalWrite(GreenLED, LOW);
       digitalWrite(RedLED, LOW);
@@ -103,10 +108,8 @@ void loop() {
       // Add TTS to countdown from 3 for the start of the game
       // Looping for three seconds to give player a countdown
       for (int i = 3; i > 0; i--) {
-        // FOR DEBUGGING
-        Serial.println(i);
         // Speaker output for countdown
-        tone(Speaker, (3-i)*1000, 50);
+        tone(Speaker, (3-i)*2000, 50);
         // waiting for 1 second 
         delay(1000); 
       }
@@ -126,6 +129,12 @@ void loop() {
 
       // assign the new action to the currAction variable
       currAction = nextAction;
+
+      // FOR DEBUGGING
+      /*debug = "Action: ";
+      debug += currAction;
+      Serial.println(debug);*/
+      
       // transition to Action Processing State
       FSMState = actionProcessing;
     break;
@@ -136,10 +145,10 @@ void loop() {
       
       // announce new action 
       if (currAction == push) { 
-        tone(Speaker, 3000, 100);
+        tone(Speaker, 5000, 100);
       }
       else if (currAction == cover) {
-        tone(Speaker, 2000, 100);
+        tone(Speaker, 3000, 100);
       }
       else if (currAction == toss) {
         tone(Speaker, 1000, 100);
