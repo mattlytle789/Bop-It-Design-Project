@@ -1,3 +1,7 @@
+#include <Wire.h>;
+#include <Adafruit_Sensor.h>;
+#include <Adafruit_ADXL345_U.h>
+
 // Defining constants for pins
 // Input Pins
 int LightSensor = A5; // Light Sensor input
@@ -37,6 +41,9 @@ bool actionCompletedFlag = false; // Flag to mark when an action has been comple
 Action_Type actionCompleted; // action that the player completed
 bool actionCorrect = false; // Flag to mark if the action the player completed was correct or incorrect :: Correct = true, Incorrect = false
 
+// Variables for reading accelerometer values
+Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified();
+
 // Misc Variables
 float timeLimit = 0; // Time limit for each action :: initialized to specified value
 short score = 0; // Score for the player 
@@ -48,6 +55,11 @@ byte BCD[10][4] = {{0,0,0,0},{0,0,0,1},{0,0,1,0},{0,0,1,1},{0,1,0,0},{0,1,0,1},{
 
 // FOR DEBUGGING 
 String debug = "";
+
+// Functions for reading the accelerometer value
+float readAccelX(void);
+float readAccelY(void);
+float readAccelZ(void); 
 
 void setup() {
   // FOR DEBUGGING
@@ -68,6 +80,8 @@ void setup() {
   pinMode(bcdOnesB, OUTPUT);
   pinMode(bcdOnesC, OUTPUT);
   pinMode(bcdOnesD, OUTPUT);
+  // Initializing the accelerometer
+  accel.begin();
   // setup for random number generation
   randomSeed(analogRead(A5));
   // Initializing FSM to reset state
@@ -218,4 +232,22 @@ void loop() {
     break; 
   }
   //*********************************************************************************  
+}
+
+
+// Functions to read accel values
+float readAccelX(void) {
+  sensors_event_t event;
+  accel.getEvent(&event);
+  return event.acceleration.x;
+}
+float readAccelY(void) {
+  sensors_event_t event;
+  accel.getEvent(&event);
+  return event.acceleration.y;
+}
+float readAccelZ(void) {
+  sensors_event_t event;
+  accel.getEvent(&event);
+  return event.acceleration.z;
 }
