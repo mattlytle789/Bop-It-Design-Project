@@ -1,3 +1,7 @@
+#include <Wire.h>;
+#include <Adafruit_Sensor.h>;
+#include <Adafruit_ADXL345_U.h>
+
 // Defining constants for pins
 // Input Pins
 int LightSensor = A5; // Light Sensor input
@@ -37,8 +41,12 @@ bool actionCompletedFlag = false; // Flag to mark when an action has been comple
 Action_Type actionCompleted; // action that the player completed
 bool actionCorrect = false; // Flag to mark if the action the player completed was correct or incorrect :: Correct = true, Incorrect = false
 
+// Variables for reading accelerometer values
+Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified();
+
 // Misc Variables
-float timeLimit = 0; // Time limit for each action :: initialized to specified value
+float timeLimitConst = 10; // Time limit for each action :: initialized to specified value
+float timeLimitIncrement; // Time limit to be incremented in a loop to track time passed
 short score = 0; // Score for the player 
 short scoreTens = 0; // Stores the tens digit value of the score
 short scoreOnes = 0; // Store the ones digit value of the score
@@ -48,6 +56,11 @@ byte BCD[10][4] = {{0,0,0,0},{0,0,0,1},{0,0,1,0},{0,0,1,1},{0,1,0,0},{0,1,0,1},{
 
 // FOR DEBUGGING 
 String debug = "";
+
+// Functions for reading the accelerometer value
+float readAccelX(void);
+float readAccelY(void);
+float readAccelZ(void); 
 
 void setup() {
   // FOR DEBUGGING
@@ -68,15 +81,18 @@ void setup() {
   pinMode(bcdOnesB, OUTPUT);
   pinMode(bcdOnesC, OUTPUT);
   pinMode(bcdOnesD, OUTPUT);
+  // Initializing the accelerometer
+  //accel.begin();
   // setup for random number generation
-  randomSeed(analogRead(A5));
+  randomSeed(analogRead(A4));
+  // initialzing time limit increment variable
+  timeLimitIncrement = timeLimitConst;
   // Initializing FSM to reset state
   FSMState = resetState;
 }
 
 void loop() {
   //********************** FSM Implementation ***************************************
-  delay(2000);
   // switch case to determine the actions of each state
   switch (FSMState) {
     // Reset State
@@ -135,7 +151,6 @@ void loop() {
       /*debug = "Action: ";
       debug += currAction;
       Serial.println(debug);*/
-      
       // transition to Action Processing State
       FSMState = actionProcessing;
     break;
@@ -155,18 +170,23 @@ void loop() {
         tone(Speaker, 1000, 100);
       }
       // wait for input from sensors
-      while (!actionCompletedFlag) {
+      timeLimitIncrement = timeLimitConst;
+      while (!actionCompletedFlag && timeLimitIncrement > 0) {
+        Serial.println(timeLimitIncrement);
         if (digitalRead(PushButton) == LOW) { // If the push action was completed
           actionCompletedFlag  = true;
           actionCompleted = push;
         }
-        else if (analogRead(LightSensor) <= 475) { // If the cover action was completed
+        else if (analogRead(LightSensor) >= 475) { // If the cover action was completed
           actionCompletedFlag = true;
           actionCompleted = cover;
         }
-        else if (true) { // if the toss action was completed
-          
-        }
+        /*else if (readAccelX() > 1 || readAccelY > 1 || readAccelZ > 1) { // if the toss action was completed
+          actionCompletedFlag = true;
+          actionCompleted = toss;
+        }*/
+        delay(1);
+        timeLimitIncrement -= 0.001;
       }
       // determine correctness of input
       if (actionCompleted == currAction) {
@@ -181,6 +201,7 @@ void loop() {
         digitalWrite(GreenLED, HIGH);
         delay(1000);
         digitalWrite(GreenLED, LOW);
+        timeLimitConst -= 0.1;
         score++;
       }
       // If wrong, time limit reached, or score = 99 :: transition to completion state and display Red LED
@@ -213,9 +234,28 @@ void loop() {
         digitalWrite(tensInputs[i], BCD[scoreTens][i]);
         digitalWrite(onesInputs[i], BCD[scoreOnes][i]);
       }
+      delay(5000);
       // transitioning to the reset state 
       FSMState = resetState;
     break; 
   }
   //*********************************************************************************  
+}
+
+
+// Functions to read accel values
+float readAccelX(void) {
+  sensors_event_t event;
+  accel.getEvent(&event);
+  return event.acceleration.x;
+}
+float readAccelY(void) {
+  sensors_event_t event;
+  accel.getEvent(&event);
+  return event.acceleration.y;
+}
+float readAccelZ(void) {
+  sensors_event_t event;
+  accel.getEvent(&event);
+  return event.acceleration.z;
 }
