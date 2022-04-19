@@ -45,7 +45,8 @@ bool actionCorrect = false; // Flag to mark if the action the player completed w
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified();
 
 // Misc Variables
-float timeLimit = 0; // Time limit for each action :: initialized to specified value
+float timeLimitConst = 10; // Time limit for each action :: initialized to specified value
+float timeLimitIncrement; // Time limit to be incremented in a loop to track time passed
 short score = 0; // Score for the player 
 short scoreTens = 0; // Stores the tens digit value of the score
 short scoreOnes = 0; // Store the ones digit value of the score
@@ -81,16 +82,17 @@ void setup() {
   pinMode(bcdOnesC, OUTPUT);
   pinMode(bcdOnesD, OUTPUT);
   // Initializing the accelerometer
-  accel.begin();
+  //accel.begin();
   // setup for random number generation
-  randomSeed(analogRead(A5));
+  randomSeed(analogRead(A4));
+  // initialzing time limit increment variable
+  timeLimitIncrement = timeLimitConst;
   // Initializing FSM to reset state
   FSMState = resetState;
 }
 
 void loop() {
   //********************** FSM Implementation ***************************************
-  delay(2000);
   // switch case to determine the actions of each state
   switch (FSMState) {
     // Reset State
@@ -149,7 +151,6 @@ void loop() {
       /*debug = "Action: ";
       debug += currAction;
       Serial.println(debug);*/
-      
       // transition to Action Processing State
       FSMState = actionProcessing;
     break;
@@ -169,18 +170,23 @@ void loop() {
         tone(Speaker, 1000, 100);
       }
       // wait for input from sensors
-      while (!actionCompletedFlag) {
+      timeLimitIncrement = timeLimitConst;
+      while (!actionCompletedFlag && timeLimitIncrement > 0) {
+        Serial.println(timeLimitIncrement);
         if (digitalRead(PushButton) == LOW) { // If the push action was completed
           actionCompletedFlag  = true;
           actionCompleted = push;
         }
-        else if (analogRead(LightSensor) <= 475) { // If the cover action was completed
+        else if (analogRead(LightSensor) >= 475) { // If the cover action was completed
           actionCompletedFlag = true;
           actionCompleted = cover;
         }
-        else if (true) { // if the toss action was completed
-          
-        }
+        /*else if (readAccelX() > 1 || readAccelY > 1 || readAccelZ > 1) { // if the toss action was completed
+          actionCompletedFlag = true;
+          actionCompleted = toss;
+        }*/
+        delay(1);
+        timeLimitIncrement -= 0.001;
       }
       // determine correctness of input
       if (actionCompleted == currAction) {
@@ -195,6 +201,7 @@ void loop() {
         digitalWrite(GreenLED, HIGH);
         delay(1000);
         digitalWrite(GreenLED, LOW);
+        timeLimitConst -= 0.1;
         score++;
       }
       // If wrong, time limit reached, or score = 99 :: transition to completion state and display Red LED
@@ -227,6 +234,7 @@ void loop() {
         digitalWrite(tensInputs[i], BCD[scoreTens][i]);
         digitalWrite(onesInputs[i], BCD[scoreOnes][i]);
       }
+      delay(5000);
       // transitioning to the reset state 
       FSMState = resetState;
     break; 
