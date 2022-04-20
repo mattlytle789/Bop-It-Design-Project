@@ -10,7 +10,7 @@ int StartButton = 2; // Button to start a new game
 int PushButton = 12; // Button used for the Psuh It action
 
 // Output Pins
-int GreenLED = 19; // LED for when the player gets an action correct
+int GreenLED = 17; // LED for when the player gets an action correct
 int RedLED = 0; // LED for when the player gets on action incorrect
 int bcdTensA = 4; // Output for the BCD A input Tens
 int bcdTensB = 5; // Output for the BCD B input Tens
@@ -64,7 +64,7 @@ float readAccelZ(void);
 
 void setup() {
   // FOR DEBUGGING
-  Serial.begin(9600);
+  //Serial.begin(9600);
   // Input Pins
   pinMode(LightSensor, INPUT);
   pinMode(StartButton, INPUT); // setting to a pull up input :: ON when LOW, OFF when HIGH
@@ -234,7 +234,7 @@ void loop() {
         digitalWrite(tensInputs[i], BCD[scoreTens][i]);
         digitalWrite(onesInputs[i], BCD[scoreOnes][i]);
       }
-      delay(5000);
+      delay(10000);
       // transitioning to the reset state 
       FSMState = resetState;
     break; 
