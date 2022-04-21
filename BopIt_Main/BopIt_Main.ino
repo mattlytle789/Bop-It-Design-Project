@@ -7,7 +7,7 @@
 int LightSensor = A5; // Light Sensor input
 int StartButton = 2; // Button to start a new game
 //int ResetButton = 3; // Button to reset the game
-int PushButton = 12; // Button used for the Psuh It action
+int PushButton = 12; // Button used for the Push It action
 
 // Output Pins
 int GreenLED = 17; // LED for when the player gets an action correct
@@ -110,6 +110,7 @@ void loop() {
       // Transition to Start State if startButton is pressed
       if (digitalRead(StartButton) == LOW) {
         FSMState = startState;
+        delay(1000);
       }
       // Stay in Reset State if startButton is not pressed
       else {
@@ -125,12 +126,14 @@ void loop() {
       // Looping for three seconds to give player a countdown
       for (int i = 3; i > 0; i--) {
         // Speaker output for countdown
-        tone(Speaker, (3-i)*2000, 50);
+        tone(Speaker, (3-i)*2000);
+        delay(50);
+        noTone(Speaker);
         // waiting for 1 second 
-        delay(1000); 
+        delay(950); 
       }
       // Start tone being outputted
-      tone(Speaker, 1000, 100); 
+      //tone(Speaker, 1000, 100); 
       // Transitioning to Action Selection State
       FSMState = actionSelection; 
     break;
@@ -147,7 +150,7 @@ void loop() {
       currAction = nextAction;
   
       // FOR DEBUGGING
-      currAction = push;
+      //currAction = cover;
       /*debug = "Action: ";
       debug += currAction;
       Serial.println(debug);*/
@@ -161,19 +164,28 @@ void loop() {
       
       // announce new action 
       if (currAction == push) { 
-        tone(Speaker, 5000, 100);
+        tone(Speaker, 2000, 100);
+        delay(100);
       }
       else if (currAction == cover) {
-        tone(Speaker, 3000, 100);
+        tone(Speaker, 2000, 100);
+        delay(100);
+        tone(Speaker, 2000, 100);
+        delay(100);
       }
       else if (currAction == toss) {
-        tone(Speaker, 1000, 100);
+        tone(Speaker, 2000, 100);
+        delay(100);
+        tone(Speaker, 2000, 100);
+        delay(100);
+        tone(Speaker, 2000, 100);
+        delay(100);
       }
       // wait for input from sensors
       timeLimitIncrement = timeLimitConst;
       while (!actionCompletedFlag && timeLimitIncrement > 0) {
-        Serial.println(timeLimitIncrement);
         if (digitalRead(PushButton) == LOW) { // If the push action was completed
+          Serial.println("check");
           actionCompletedFlag  = true;
           actionCompleted = push;
         }
