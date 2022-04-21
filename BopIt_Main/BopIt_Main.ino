@@ -64,7 +64,7 @@ float readAccelZ(void);
 
 void setup() {
   // FOR DEBUGGING
-  //Serial.begin(9600);
+  //Serial.begin(9600); // comment out when using atmega chip
   // Input Pins
   pinMode(LightSensor, INPUT);
   pinMode(StartButton, INPUT); // setting to a pull up input :: ON when LOW, OFF when HIGH
