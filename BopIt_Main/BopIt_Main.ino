@@ -164,13 +164,10 @@ void loop() {
         tone(Speaker, 5000, 100);
       }
       else if (currAction == cover) {
-        tone(Speaker, 5000, 100);
-        tone(Speaker, 5000, 100);
+        tone(Speaker, 3000, 100);
       }
       else if (currAction == toss) {
-        tone(Speaker, 5000, 100);
-        tone(Speaker, 5000, 100);
-        tone(Speaker, 5000, 100);
+        tone(Speaker, 1000, 100);
       }
       // wait for input from sensors
       timeLimitIncrement = timeLimitConst;
