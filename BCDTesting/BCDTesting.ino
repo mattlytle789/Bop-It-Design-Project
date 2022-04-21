@@ -11,13 +11,17 @@ void setup() {
     pinMode(bcdInputs[i], OUTPUT);
   }
   Serial.begin(9600);
+  for (int i = 0; i < 4; i++) {
+    Serial.println(BCD[1][i]);
+    digitalWrite(bcdInputs[i], BCD[1][i]);
+  }
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  for (int i = 0; i < 4; i++) {
+  /*for (int i = 0; i < 4; i++) {
     Serial.println(BCD[02][i]);
     digitalWrite(bcdInputs[i], BCD[2][i]);
   }
-  delay(3000);
+  delay(3000);*/
 }
