@@ -11,7 +11,7 @@ int PushButton = 12; // Button used for the Push It action
 
 // Output Pins
 int GreenLED = 17; // LED for when the player gets an action correct
-int RedLED = 0; // LED for when the player gets on action incorrect
+int RedLED = 16; // LED for when the player gets on action incorrect
 int bcdTensA = 4; // Output for the BCD A input Tens
 int bcdTensB = 5; // Output for the BCD B input Tens
 int bcdTensC = 6; // Output for the BCD C input Tens
@@ -45,7 +45,7 @@ bool actionCorrect = false; // Flag to mark if the action the player completed w
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified();
 
 // Misc Variables
-float timeLimitConst = 10; // Time limit for each action :: initialized to specified value
+float timeLimitConst = 5; // Time limit for each action :: initialized to specified value
 float timeLimitIncrement; // Time limit to be incremented in a loop to track time passed
 short score = 0; // Score for the player 
 short scoreTens = 0; // Stores the tens digit value of the score
@@ -64,7 +64,7 @@ float readAccelZ(void);
 
 void setup() {
   // FOR DEBUGGING
-  //Serial.begin(9600);
+  Serial.begin(9600); // comment out when using atmega chip
   // Input Pins
   pinMode(LightSensor, INPUT);
   pinMode(StartButton, INPUT); // setting to a pull up input :: ON when LOW, OFF when HIGH
@@ -82,9 +82,11 @@ void setup() {
   pinMode(bcdOnesC, OUTPUT);
   pinMode(bcdOnesD, OUTPUT);
   // Initializing the accelerometer
-  //accel.begin();
+  if(!accel.begin()) {
+    Serial.println("No Accel");
+  }
   // setup for random number generation
-  randomSeed(analogRead(A4));
+  randomSeed(0);
   // initialzing time limit increment variable
   timeLimitIncrement = timeLimitConst;
   // Initializing FSM to reset state
@@ -99,7 +101,10 @@ void loop() {
     case resetState :
       // FOR DEBUGGING
       Serial.println(FSMState);
-    
+
+      // resetting the score
+      score = 0;
+      
       // Setting outputs to low values
       digitalWrite(GreenLED, LOW);
       digitalWrite(RedLED, LOW);
@@ -143,14 +148,14 @@ void loop() {
       Serial.println(FSMState);
       
       // generate a random number from 0 to 2 to index possibleAction array
-      nextActionIndex = random(0,2);
+      nextActionIndex = random(0,3);
       nextAction = possibleAction[nextActionIndex];
 
       // assign the new action to the currAction variable
       currAction = nextAction;
   
       // FOR DEBUGGING
-      //currAction = cover;
+      //currAction = toss;
       /*debug = "Action: ";
       debug += currAction;
       Serial.println(debug);*/
@@ -166,39 +171,48 @@ void loop() {
       if (currAction == push) { 
         tone(Speaker, 2000, 100);
         delay(100);
+        noTone(Speaker);
       }
       else if (currAction == cover) {
         tone(Speaker, 2000, 100);
         delay(100);
+        noTone(Speaker);
+        delay(100);
         tone(Speaker, 2000, 100);
         delay(100);
+        noTone(Speaker);
       }
       else if (currAction == toss) {
         tone(Speaker, 2000, 100);
         delay(100);
-        tone(Speaker, 2000, 100);
+        noTone(Speaker);
         delay(100);
         tone(Speaker, 2000, 100);
         delay(100);
+        noTone(Speaker);
+        delay(100);
+        tone(Speaker, 2000, 100);
+        delay(100);
+        noTone(Speaker);
       }
       // wait for input from sensors
       timeLimitIncrement = timeLimitConst;
       while (!actionCompletedFlag && timeLimitIncrement > 0) {
+        //Serial.println(analogRead(LightSensor));
         if (digitalRead(PushButton) == LOW) { // If the push action was completed
-          Serial.println("check");
           actionCompletedFlag  = true;
           actionCompleted = push;
         }
-        else if (analogRead(LightSensor) >= 475) { // If the cover action was completed
+        else if (analogRead(LightSensor) <= 750) { // If the cover action was completed
           actionCompletedFlag = true;
           actionCompleted = cover;
         }
-        /*else if (readAccelX() > 1 || readAccelY > 1 || readAccelZ > 1) { // if the toss action was completed
+        else if (readAccelX() > 10 || readAccelY() > 10 || readAccelZ() > 10) { // if the toss action was completed
           actionCompletedFlag = true;
           actionCompleted = toss;
-        }*/
+        }
         delay(1);
-        timeLimitIncrement -= 0.001;
+        timeLimitIncrement -= 0.01;
       }
       // determine correctness of input
       if (actionCompleted == currAction) {
@@ -211,7 +225,7 @@ void loop() {
       if (actionCorrect && score < 100) {
         FSMState = actionSelection;
         digitalWrite(GreenLED, HIGH);
-        delay(1000);
+        delay(2000);
         digitalWrite(GreenLED, LOW);
         timeLimitConst -= 0.1;
         score++;
@@ -220,7 +234,7 @@ void loop() {
       else {
         FSMState = completion;
         digitalWrite(RedLED, HIGH);
-        delay(500);
+        delay(2000);
         digitalWrite(RedLED, LOW);
       }
       // Write score to seven seg display
@@ -246,6 +260,15 @@ void loop() {
         digitalWrite(tensInputs[i], BCD[scoreTens][i]);
         digitalWrite(onesInputs[i], BCD[scoreOnes][i]);
       }
+      tone(Speaker, 2000);
+      delay(500);
+      noTone(Speaker);
+      tone(Speaker, 1000);
+      delay(500);
+      noTone(Speaker);
+      Serial.println("GAME OVER");
+      Serial.println("Score: ");
+      Serial.print(score);
       delay(10000);
       // transitioning to the reset state 
       FSMState = resetState;
